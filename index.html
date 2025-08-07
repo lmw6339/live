@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>주역으로 보는 오늘의 운세</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 40px 20px;
+    background-color: #fdfdfd;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    color: #0056b3;
+    margin-bottom: 26px;
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+
+  /* 버튼 스타일 (요청 이미지 스타일) */
+  #generateButton {
+    background-color: #2f4f4f; /* 짙은 녹색 */
+    color: white;
+    padding: 20px 30px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: 600;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.18);
+    user-select: none;
+    max-width: 460px;
+    width: 100%;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #generateButton:hover {
+    background-color: #256262;
+  }
+
+  /* 결과 영역 박스 */
+  #result {
+    margin-top: 12px;
+    border: 2px solid #117a00; /* 진한 초록색 테두리 */
+    border-radius: 12px;
+    background-color: white;
+    padding: 25px 40px;
+    max-width: 460px;
+    width: 100%;
+    min-height: 80px;
+    box-sizing: border-box;
+    user-select: none;
+    font-size: 24px;
+    font-weight: 600;
+    color: #117a00;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  #result .label {
+    font-size: 28px;
+    font-weight: bold;
+    color: #117a00;
+    margin-bottom: 12px;
+    user-select: none;
+  }
+
+  #result .value {
+    font-size: 36px;
+    font-weight: bold;
+    color: red;
+    user-select: text;
+    cursor: pointer;
+  }
+
+  /* 관리자 영역 스타일 */
+  footer {
+    margin-top: auto;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    padding-top: 40px;
+  }
+  #passwordInput {
+    padding: 8px;
+    width: 60%;
+    max-width: 280px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  footer button {
+    padding: 8px 16px;
+    margin-left: 8px;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .admin-section {
+    display: none;
+    border: 1px solid #ccc;
+    padding: 15px;
+    background: #fff;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+
+  #guaGrid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  #guaGrid div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #guaGrid label {
+    font-size: 12px;
+    margin-bottom: 4px;
+    user-select: none;
+  }
+
+  #guaGrid input[type="text"] {
+    padding: 6px 4px;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .admin-buttons button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  .admin-buttons button:hover {
+    background-color: #0056b3;
+  }
+
+  #toggleButton {
+    margin-top: 10px;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 40px;
+    }
+    #generateButton {
+      padding: 16px 20px;
+      font-size: 22px;
+      border-radius: 8px;
+    }
+    #result {
+      padding: 20px;
+      font-size: 20px;
+      min-height: 60px;
+    }
+    #result .label {
+      font-size: 22px;
+    }
+    #result .value {
+      font-size: 28px;
+    }
+    #guaGrid input[type="text"] {
+      font-size: 10px;
+      padding: 5px 3px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>주역으로 보는 오/늘/의/운/세</h1>
+
+<button id="generateButton" onclick="generateAndDisplay()">
+  약서법 주역괘 생성(클릭)
+</button>
+
+<div id="result" aria-live="polite" role="region" style="border: 4px solid #117a00;">
+  <span class="label"></span>
+  <span class="value"></span>
+</div>
+
+<footer>
+  <div>
+    <input type="password" id="passwordInput" placeholder="비밀번호를 입력하세요" />
+    <button onclick="checkPassword()">운영자 영역 열기</button>
+  </div>
+
+  <div class="admin-section" id="adminSection">
+    <h2 style="color:#007bff; margin-top:0; margin-bottom:10px;">운영자 영역</h2>
+    <div id="guaGrid"></div>
+    <div class="admin-buttons" style="margin-top:10px;">
+      <button onclick="saveLinks()">저장</button>
+    </div>
+    <button id="toggleButton" onclick="toggleAdminSection()">접기</button>
+  </div>
+</footer>
+
+<script>
+  const guaLinks = {};
+  const correctPassword = "1963";
+  let currentGuaKey = null;
+  let adminSectionVisible = false;
+
+  function createGuaInputs() {
+    const gridContainer = document.getElementById('guaGrid');
+    gridContainer.innerHTML = ''; // 초기화
+    for (let i = 1; i <= 8; i++) {
+      for (let j = 1; j <= 8; j++) {
+        const guaKey = `${i}-${j}`;
+        const gridItem = document.createElement('div');
+
+        const label = document.createElement('label');
+        label.setAttribute('for', guaKey);
+        label.textContent = guaKey + ":";
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = guaKey;
+        input.placeholder = "유튜브 링크입력";
+
+        const storedLink = localStorage.getItem(guaKey);
+        if (storedLink) {
+          input.value = storedLink;
+          guaLinks[guaKey] = storedLink;
+        }
+
+        input.addEventListener('blur', function () {
+          guaLinks[guaKey] = this.value;
+        });
+
+        gridItem.appendChild(label);
+        gridItem.appendChild(input);
+        gridContainer.appendChild(gridItem);
+      }
+    }
+  }
+
+  function saveLinks() {
+    for (let i = 1; i <= 8; i++) {
+      for (let j = 1; j <= 8; j++) {
+        const guaKey = `${i}-${j}`;
+        const inputElement = document.getElementById(guaKey);
+        if(inputElement) {
+          localStorage.setItem(guaKey, inputElement.value);
+          guaLinks[guaKey] = inputElement.value;
+        }
+      }
+    }
+    alert('링크가 저장되었습니다!');
+  }
+
+  function generateGua() {
+    const i = Math.floor(Math.random() * 8) + 1;
+    const j = Math.floor(Math.random() * 8) + 1;
+    return `${i}-${j}`;
+  }
+
+  function displayLink(guaKey) {
+    currentGuaKey = guaKey;
+    const resultDiv = document.getElementById('result');
+    const labelSpan = resultDiv.querySelector('.label');
+    const valueSpan = resultDiv.querySelector('.value');
+
+    labelSpan.textContent = "";
+    valueSpan.textContent = `${guaKey} : 두번째 클릭!`;
+    valueSpan.style.color = 'red';
+    valueSpan.style.cursor = 'pointer';
+
+    // 깜빡임 애니메이션(클래스 재적용 트릭)
+    valueSpan.classList.remove('blink');
+    void valueSpan.offsetWidth; 
+    valueSpan.classList.add('blink');
+
+    // 클릭 이벤트 설정
+    resultDiv.removeEventListener('click', openLink);
+    resultDiv.addEventListener('click', openLink);
+  }
+
+  function openLink() {
+    if (currentGuaKey) {
+      const link = localStorage.getItem(currentGuaKey);
+      if (link) {
+        window.open(link, '_blank');
+      } else {
+        alert('해당 괘에 연결된 링크가 없습니다.');
+      }
+    }
+  }
+
+  function generateAndDisplay() {
+    const guaKey = generateGua();
+    displayLink(guaKey);
+  }
+
+  function toggleAdminSection() {
+    const adminSection = document.getElementById('adminSection');
+    adminSectionVisible = !adminSectionVisible;
+    adminSection.style.display = adminSectionVisible ? 'block' : 'none';
+    document.getElementById('toggleButton').textContent = adminSectionVisible ? '접기' : '펼치기';
+  }
+
+  function checkPassword() {
+    const password = document.getElementById('passwordInput').value;
+    if (password === correctPassword) {
+      const adminSection = document.getElementById('adminSection');
+      adminSection.style.display = 'block';
+      adminSectionVisible = true;
+      document.getElementById('toggleButton').textContent = '접기';
+      createGuaInputs();
+    } else {
+      alert('비밀번호가 틀렸습니다.');
+    }
+  }
+
+  // 깜빡임 애니메이션 스타일 추가
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = `
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .blink {
+      animation: blink 1s infinite;
+    }
+  `;
+  document.head.appendChild(styleSheet);
+
+  // 페이지 로드시에도 복서64괘 입력 필드 생성하는 대신, 관리자 모드 열 때 그때 생성하게 변경.  
+  // 대신 기존 로딩 시 localStorage에 저장된 링크는 guaLinks 객체에 미리 저장해둠
+  window.onload = () => {
+    // 관리자 영역 처음 페이지 로드 시에는 숨김
+    document.getElementById('adminSection').style.display = 'none';
+
+    // localStorage 데이터 로드 (미리 guaLinks에 세팅)
+    for (let i = 1; i <= 8; i++) {
+      for (let j = 1; j <= 8; j++) {
+        const key = `${i}-${j}`;
+        const val = localStorage.getItem(key);
+        if(val) guaLinks[key] = val;
+      }
+    }
+  };
+</script>
+
+</body>
+</html>
